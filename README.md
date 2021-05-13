@@ -2,8 +2,7 @@
 An auto winding/excitation arrangement MATLAB script for ANSYS Maxwell 2D/3D
 
 Function:
-•	Auto winding arrangement calculation. The slot-star vectogram will be plotted. The slot-phase arrangements and corresponding data will be displayed in the command window.
-•	Auto excitation arrangement in ANSYS Maxwell 2D/3D. No need for manual input.
+Auto winding arrangement calculation. The slot-star vectogram will be plotted. The slot-phase arrangements and corresponding data will be displayed in the command window. Auto excitation arrangement in ANSYS Maxwell 2D/3D. No need for manual input.
 
 How to use it:
 1.	Fill the "input" according to your model. The items you need to fill are:
