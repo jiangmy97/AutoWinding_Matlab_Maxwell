@@ -26,9 +26,9 @@ DesignName='noload';        % Name of the design
 TerminalName1='Coil';     % Name of the winding terminal
 TerminalName2='Coilu';     % Name of the winding terminal (For mode 2 and mode 4)
 m=3;        % Phase
-p=4;       % Pole pairs
-z=24;       % Slots
-coil_pitch=0;       % 0 for auto coil pitch calculation, [1, +inf) for manual control
+p=2;       % Pole pairs
+z=6;       % Slots
+coil_pitch=1;       % 0 for auto coil pitch calculation, [1, +inf) for manual control
 
 % Auto calculate the coil pitch (usually 5/6 of whole pitch)
 if coil_pitch==0
@@ -39,6 +39,9 @@ if coil_pitch==0
 end
 
 alf=p*360/z;        % Electric angle between two slots in deg
+% Display
+fprintf('Coil pitch = %d slot(s)\n',coil_pitch)
+fprintf('Slot angle = %.4f deg\n',alf)
 
 % Calculate the electric angle of every slot (0 deg - 359 deg)
 for i=1:z
@@ -117,8 +120,6 @@ k_d=sind(q*alf/2)/(q*sind(alf/2));
 k_w=k_d*k_p;
 
 % Display
-fprintf('Coil pitch = %d slot(s)\n',coil_pitch)
-fprintf('Slot angle = %.4f deg\n',alf)
 fprintf('Pitch factor = %.4f\n',k_p)
 fprintf('Distribution factor = %.4f\n',k_d)
 fprintf('Winding factor = %.4f\n',k_w)
