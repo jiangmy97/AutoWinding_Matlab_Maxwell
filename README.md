@@ -1,5 +1,7 @@
 # AutoWinding_Matlab_Maxwell
-An auto winding/excitation arrangement MATLAB script for ANSYS Maxwell 2D/3D
+An auto winding/excitation arrangement MATLAB script for ANSYS Maxwell 2D/3D.
+
+PDF version instructions [here](https://github.com/cannonjiang97/AutoWinding_Matlab_Maxwell/blob/main/Instruction_AutoWinding.pdf). Updated on May 17th, 2021.
 
 ## Function:
 * Auto winding arrangement calculation. The slot-star vectogram will be plotted. The slot-phase arrangements and corresponding data will be displayed in the command window. 
@@ -22,9 +24,10 @@ An auto winding/excitation arrangement MATLAB script for ANSYS Maxwell 2D/3D
   -	Pole-pair number of the machine (*p*).
   -	Slot number of the machine (*z*).
   -	Coil pitch of the machine (*coil_pitch*). 0 for auto coil pitch calculation. [1, +inf) for manual control.
+  -	Number of one layer conductors (*N*).
 
 2.	Run the .m file. The .vbs will generate in the same folder of .m file. The slot-star vectogram will be plotted and the slot-phase arrangements will be displayed in the command window. **Close the MATLAB after you have finished this step**.
 
-3.	Open the .aedt file. **Make sure there are no items in “Excitations”**. 
+3.	Open the .aedt file. **Make sure there are no items in “Excitations”**. **Also make sure that there should be no variable named as "N" in your Maxwell 2D/3D > Design properties.**
  
 4.	Run the script in “Tools > Run script”. The excitation will automatically be arranged.
