@@ -1,6 +1,6 @@
 % AutoWinding.m
 % For arranging windings and auto excitation arrangement in Ansys Maxwell.
-% By JIANG M. Y. on May 13th, 2021.
+% By JIANG M. Y. on May 17th, 2021.
 
 % ===Instruction===
 % 1. Fill the "input" according to your model.
@@ -8,27 +8,29 @@
 % 3. The name of winding terminal should be in the form of "TerminalName_TerminalNumber", (e.g. Terminal_3). 
 
 % ===!ATTENTION!===
+% There should be no variable named as "N" in your Maxwell 2D/3D > Design properties!
 % For mode 1 to 4, the "Excitations" in your Maxwell design MUST BE EMPTY! 
 
 clear all
 clc
 
 % Input 
-mode=5;         
+mode=3;         
 % mode=1 for single layer auto winding excitation arrangement in Maxwell 2D 
 % mode=2 for double layer auto winding excitation arrangement in Maxwell 2D
 % mode=3 for single layer auto winding excitation arrangement in Maxwell 3D
 % mode=4 for double layer auto winding excitation arrangement in Maxwell 3D
 % mode=5 for winding arrangement display only
 OutputFilename='test1.vbs';        % Filename of .vbs
-ProjectName='MG1-2D';         % Filename of .aedt
+ProjectName='MG2-3D';         % Filename of .aedt
 DesignName='noload';        % Name of the design
 TerminalName1='Coil';     % Name of the winding terminal
 TerminalName2='Coilu';     % Name of the winding terminal (For mode 2 and mode 4)
 m=3;        % Phase
 p=2;       % Pole pairs
-z=6;       % Slots
-coil_pitch=1;       % 0 for auto coil pitch calculation, [1, +inf) for manual control
+z=12;       % Slots
+coil_pitch=3;       % 0 for auto coil pitch calculation, [1, +inf) for manual control
+N=4;        % Number of one layer conductors
 
 % Auto calculate the coil pitch (usually 5/6 of whole pitch)
 if coil_pitch==0
@@ -157,7 +159,7 @@ if mode~=5
     % Configure output file
     Dat=fopen(OutputFilename,'w');
     fprintf(Dat,'''------------------------------------------\n');
-    fprintf(Dat,'''WindingCal1 by JIANG M. Y.\n');
+    fprintf(Dat,'''AutoWinding by JIANG M. Y.\n');
     fprintf(Dat,'''Last Modified: %s\n',datestr(now,31));
     fprintf(Dat,'''------------------------------------------\n');
     fclose(Dat);
@@ -176,6 +178,10 @@ if mode~=5
     fprintf(fid,'Set oProject = oDesktop.SetActiveProject("%s")\n',ProjectName);
     fprintf(fid,'Set oDesign = oProject.SetActiveDesign("%s")\n',DesignName);
     fprintf(fid,'Set oModule = oDesign.GetModule("BoundarySetup")\n');
+    % ---Add the number of conducters per layer
+    fprintf(fid,'oDesign.ChangeProperty Array("NAME:AllTabs", Array("NAME:LocalVariableTab", Array("NAME:PropServers",  _\n');
+    fprintf(fid,'  "LocalVariables"), Array("NAME:NewProps", Array("NAME:N", "PropType:=", "VariableProp", "UserDef:=",  _\n');
+    fprintf(fid,'  true, "Value:=", "%d")), Array("NAME:DeletedProps", "N1")))\n',N);
     % ---Add winding---
     Winding={'A','B','C'};
     for i=1:length(Winding)
