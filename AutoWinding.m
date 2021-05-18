@@ -30,7 +30,7 @@ m=3;        % Phase
 p=2;       % Pole pairs
 z=12;       % Slots
 coil_pitch=3;       % 0 for auto coil pitch calculation, [1, +inf) for manual control
-N=4;        % Number of one layer conductors
+Nc=4;        % Number of one layer conductors
 
 % Auto calculate the coil pitch (usually 5/6 of whole pitch)
 if coil_pitch==0
@@ -181,7 +181,7 @@ if mode~=5
     % ---Add the number of conducters per layer
     fprintf(fid,'oDesign.ChangeProperty Array("NAME:AllTabs", Array("NAME:LocalVariableTab", Array("NAME:PropServers",  _\n');
     fprintf(fid,'  "LocalVariables"), Array("NAME:NewProps", Array("NAME:N", "PropType:=", "VariableProp", "UserDef:=",  _\n');
-    fprintf(fid,'  true, "Value:=", "%d")), Array("NAME:DeletedProps", "N1")))\n',N);
+    fprintf(fid,'  true, "Value:=", "%d")), Array("NAME:DeletedProps", "N1")))\n',Nc);
     % ---Add winding---
     Winding={'A','B','C'};
     for i=1:length(Winding)
