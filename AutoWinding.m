@@ -1,6 +1,6 @@
 % AutoWinding.m
 % For arranging windings and auto excitation arrangement in Ansys Maxwell.
-% By JIANG M. Y. on May 18th, 2021.
+% By JIANG M. Y. on May 21st, 2021.
 
 % ===Instruction===
 % 1. Fill the "input" according to your model.
@@ -181,7 +181,7 @@ if mode~=5
     % ---Add the number of conducters per layer
     fprintf(fid,'oDesign.ChangeProperty Array("NAME:AllTabs", Array("NAME:LocalVariableTab", Array("NAME:PropServers",  _\n');
     fprintf(fid,'  "LocalVariables"), Array("NAME:NewProps", Array("NAME:N", "PropType:=", "VariableProp", "UserDef:=",  _\n');
-    fprintf(fid,'  true, "Value:=", "%d")), Array("NAME:DeletedProps", "N1")))\n',Nc);
+    fprintf(fid,'  true, "Value:=", "%d"))))\n',Nc);
     % ---Add winding---
     Winding={'A','B','C'};
     for i=1:length(Winding)
