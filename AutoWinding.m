@@ -1,6 +1,6 @@
 % AutoWinding.m
 % For arranging windings and auto excitation arrangement in Ansys Maxwell.
-% By JIANG M. Y. on 2021-07-14.
+% By JIANG M. Y. on 2021-07-29.
 
 % ===Instruction===
 % 1. Fill the "input" according to your model.
