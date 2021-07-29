@@ -1,6 +1,6 @@
 % AutoWinding.m
 % For arranging windings and auto excitation arrangement in Ansys Maxwell.
-% By JIANG M. Y. on May 21st, 2021.
+% By JIANG M. Y. on 2021-07-14.
 
 % ===Instruction===
 % 1. Fill the "input" according to your model.
@@ -15,22 +15,24 @@ clear all
 clc
 
 % Input 
-mode=3;         
+mode=2;         
 % mode=1 for single layer auto winding excitation arrangement in Maxwell 2D 
 % mode=2 for double layer auto winding excitation arrangement in Maxwell 2D
 % mode=3 for single layer auto winding excitation arrangement in Maxwell 3D
 % mode=4 for double layer auto winding excitation arrangement in Maxwell 3D
 % mode=5 for winding arrangement display only
 OutputFilename='test1.vbs';        % Filename of .vbs
-ProjectName='MG2-3D';         % Filename of .aedt
-DesignName='noload';        % Name of the design
-TerminalName1='Coil';     % Name of the winding terminal
-TerminalName2='Coilu';     % Name of the winding terminal (For mode 2 and mode 4)
+ProjectName='DS-R-1';         % Filename of .aedt
+DesignName='noload-m2';        % Name of the design
+TerminalName1='ICoil';     % Name of the winding terminal
+TerminalName2='ICoilu';     % Name of the winding terminal (For mode 2 and mode 4)
 m=3;        % Phase
-p=2;       % Pole pairs
-z=12;       % Slots
-coil_pitch=3;       % 0 for auto coil pitch calculation, [1, +inf) for manual control
-Nc=4;        % Number of one layer conductors
+p=3;       % Pole pairs
+z=36;       % Slots
+coil_pitch=0;       % 0 for auto coil pitch calculation, [1, +inf) for manual control, -1 for drum coil
+Nc=0;        % Number of one layer conductors, Nc=0 for already set
+FlagCreateWinding=0;    % Switch of create winding, 1 for need to create, 0 for no need
+WindingNames={'A','B','C'};         % Names of windings, like 'A', 'B', 'C'
 
 % Auto calculate the coil pitch (usually 5/6 of whole pitch)
 if coil_pitch==0
@@ -38,6 +40,8 @@ if coil_pitch==0
     if coil_pitch==0
         coil_pitch=1;
     end
+elseif coil_pitch==-1
+    coil_pitch=0;
 end
 
 alf=p*360/z;        % Electric angle between two slots in deg
@@ -47,7 +51,7 @@ fprintf('Slot angle = %.4f deg\n',alf)
 
 % Calculate the electric angle of every slot (0 deg - 359 deg)
 for i=1:z
-    slot_deg(i)=(i-1)*alf;
+    slot_deg(i)=(i-1)*alf+0.0001;
     while(1)
         if slot_deg(i)>=360
             slot_deg(i)=slot_deg(i)-360;
@@ -179,15 +183,19 @@ if mode~=5
     fprintf(fid,'Set oDesign = oProject.SetActiveDesign("%s")\n',DesignName);
     fprintf(fid,'Set oModule = oDesign.GetModule("BoundarySetup")\n');
     % ---Add the number of conducters per layer
-    fprintf(fid,'oDesign.ChangeProperty Array("NAME:AllTabs", Array("NAME:LocalVariableTab", Array("NAME:PropServers",  _\n');
-    fprintf(fid,'  "LocalVariables"), Array("NAME:NewProps", Array("NAME:N", "PropType:=", "VariableProp", "UserDef:=",  _\n');
-    fprintf(fid,'  true, "Value:=", "%d"))))\n',Nc);
+    if Nc~=0
+        fprintf(fid,'oDesign.ChangeProperty Array("NAME:AllTabs", Array("NAME:LocalVariableTab", Array("NAME:PropServers",  _\n');
+        fprintf(fid,'  "LocalVariables"), Array("NAME:NewProps", Array("NAME:N", "PropType:=", "VariableProp", "UserDef:=",  _\n');
+        fprintf(fid,'  true, "Value:=", "%d"))))\n',Nc);
+    end
     % ---Add winding---
-    Winding={'A','B','C'};
-    for i=1:length(Winding)
-        fprintf(fid,'oModule.AssignWindingGroup Array("NAME:Winding%c", "Type:=", "Current", "IsSolid:=",  _\n',Winding{i});
-        fprintf(fid,'  false, "Current:=", "0mA", "Resistance:=", "0ohm", "Inductance:=", "0nH", "Voltage:=",  _\n');
-        fprintf(fid,'  "0mV", "ParallelBranchesNum:=", "1")\n');
+    if FlagCreateWinding==1
+%         Winding={'A','B','C'};
+        for i=1:length(WindingNames)
+            fprintf(fid,'oModule.AssignWindingGroup Array("NAME:Winding%s", "Type:=", "Current", "IsSolid:=",  _\n',WindingNames{i});
+            fprintf(fid,'  false, "Current:=", "0mA", "Resistance:=", "0ohm", "Inductance:=", "0nH", "Voltage:=",  _\n');
+            fprintf(fid,'  "0mV", "ParallelBranchesNum:=", "1")\n');
+        end
     end
     % ---Arrange winding---
     
@@ -221,14 +229,7 @@ if mode~=5
         else
             fprintf(fid,'oModule.AddWindingTerminals ');
         end
-        switch abs(SLOT(2,i))
-            case 1
-                fprintf(fid,'"WindingA", Array("%s_%d")\n',TerminalName1,SLOT(3,i));
-            case 2
-                fprintf(fid,'"WindingB", Array("%s_%d")\n',TerminalName1,SLOT(3,i));
-            case 3
-                fprintf(fid,'"WindingC", Array("%s_%d")\n',TerminalName1,SLOT(3,i));
-        end
+            fprintf(fid,'"Winding%s", Array("%s_%d")\n',WindingNames{abs(SLOT(2,i))},TerminalName1,SLOT(3,i));
     end
     
     
@@ -263,15 +264,9 @@ if mode~=5
             else
                 fprintf(fid,'oModule.AddWindingTerminals ');
             end
-            switch abs(SLOT(1,i))
-                case 1
-                    fprintf(fid,'"WindingA", Array("%s_%d")\n',TerminalName2,SLOT(3,i));
-                case 2
-                    fprintf(fid,'"WindingB", Array("%s_%d")\n',TerminalName2,SLOT(3,i));
-                case 3
-                    fprintf(fid,'"WindingC", Array("%s_%d")\n',TerminalName2,SLOT(3,i));
-            end
+            fprintf(fid,'"Winding%s", Array("%s_%d")\n',WindingNames{abs(SLOT(1,i))},TerminalName2,SLOT(3,i));
         end
     end
+    fclose('all');
 end
 
