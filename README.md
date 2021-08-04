@@ -1,12 +1,12 @@
 # AutoWinding_Matlab_Maxwell
 An auto AC and DC machine's winding/excitation arrangement MATLAB script for ANSYS Maxwell 2D/3D.
 
-The MATLAB script for DC machine is [here](https://github.com/jiangmy97/AutoWinding_Matlab_Maxwell/blob/main/AutoWindingDC.m) and for AC machine is [here](https://github.com/jiangmy97/AutoWinding_Matlab_Maxwell/blob/main/AutoWindingAC.m).  
+The MATLAB script for AC machine is [here](https://github.com/jiangmy97/AutoWinding_Matlab_Maxwell/blob/main/AutoWindingAC.m) and for DC machine is [here](https://github.com/jiangmy97/AutoWinding_Matlab_Maxwell/blob/main/AutoWindingDC.m).  
 
 Last updated on 2021-08-04.
 
 ## Function:
-* Auto AC machines' winding arrangement calculation. The slot-star vectogram will be plotted. The slot-phase arrangements and corresponding data will be displayed in the command window. 
+* Auto AC/DC machines' winding arrangement calculation. The slot-star vectogram will be plotted. The slot-phase arrangements and corresponding data will be displayed in the command window. 
 * Auto excitation arrangement in ANSYS Maxwell 2D/3D. No need for manual input.
 
 ## How to use it:
