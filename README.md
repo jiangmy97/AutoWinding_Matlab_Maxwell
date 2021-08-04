@@ -1,7 +1,7 @@
 # AutoWinding_Matlab_Maxwell
 An auto AC and DC machine's winding/excitation arrangement MATLAB script for ANSYS Maxwell 2D/3D.
 
-The MATLAB script is [here](https://github.com/cannonjiang97/AutoWinding_Matlab_Maxwell/blob/main/AutoWinding.m).  
+The MATLAB script for DC machine is [here](https://github.com/jiangmy97/AutoWinding_Matlab_Maxwell/blob/main/AutoWindingDC.m) and for AC machine is [here](https://github.com/jiangmy97/AutoWinding_Matlab_Maxwell/blob/main/AutoWindingAC.m).  
 
 Last updated on 2021-08-04.
 
