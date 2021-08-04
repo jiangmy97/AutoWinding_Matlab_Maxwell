@@ -7,10 +7,6 @@
 % 2. Run the script in "Tools > Run script"
 % 3. The name of winding terminal should be in the form of "TerminalName_TerminalNumber", (e.g. Terminal_3). 
 
-% ===!ATTENTION!===
-% There should be no variable named as "N" in your Maxwell 2D/3D > Design properties!
-% For mode 1 to 4, the "Excitations" in your Maxwell design MUST BE EMPTY! 
-
 clear all
 clc
 
@@ -31,7 +27,7 @@ p=3;       % Pole pairs
 z=36;       % Slots
 coil_pitch=0;       % 0 for auto coil pitch calculation, [1, +inf) for manual control, -1 for drum coil
 Nc=0;        % Number of one layer conductors, Nc=0 for already set
-FlagCreateWinding=0;    % Switch of create winding, 1 for need to create, 0 for no need
+FlagCreateWinding=1;    % Switch of create winding, 1 for need to create, 0 for no need
 WindingNames={'A','B','C'};         % Names of windings, like 'A', 'B', 'C'
 
 % Auto calculate the coil pitch (usually 5/6 of whole pitch)
