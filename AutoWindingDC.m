@@ -23,8 +23,8 @@ DesignName='noload';        % Name of the design
 TerminalName1='Coil';     % Name of the winding terminal
 TerminalName2='Coilu';     % Name of the winding terminal (For mode 2 and mode 4)
 
-p=2;       % Pole pairs
-z=30;       % Slots
+p=5;       % Pole pairs
+z=11;       % Slots
 
 Nc=0;        % Number of one layer conductors, Nc=0 for already set
 FlagCreateWinding=1;    % Switch of create winding, 1 for need to create, 0 for no need
@@ -125,6 +125,7 @@ for i=1:length(CONNECT)
     fprintf('%d-',CONNECT(i))
 end
 fprintf('1 (loop)\n')
+fprintf('* For winding-slot arrangement, please check "WindingSlot".\n')
 
 % .vbs output
 if mode~=5
