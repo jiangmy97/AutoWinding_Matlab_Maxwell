@@ -1,6 +1,6 @@
 % AutoWinding.m
-% For arranging windings and auto excitation arrangement in Ansys Maxwell.
-% By JIANG M. Y. on 2021-07-29.
+% For arranging AC machine's windings and auto excitation arrangement in Ansys Maxwell.
+% By JIANG M. Y. on 2021-08-04.
 
 % ===Instruction===
 % 1. Fill the "input" according to your model.
@@ -22,14 +22,14 @@ ProjectName='DS-R-1';         % Filename of .aedt
 DesignName='noload-m2';        % Name of the design
 TerminalName1='ICoil';     % Name of the winding terminal
 TerminalName2='ICoilu';     % Name of the winding terminal (For mode 2 and mode 4)
-m=3;        % Phase
-p=3;       % Pole pairs
-z=36;       % Slots
+WindingNames={'A','B','C'};         % Names of windings, like 'A', 'B', 'C'
+p=2;       % Pole pairs
+z=30;       % Slots
 coil_pitch=0;       % 0 for auto coil pitch calculation, [1, +inf) for manual control, -1 for drum coil
 Nc=0;        % Number of one layer conductors, Nc=0 for already set
 FlagCreateWinding=1;    % Switch of create winding, 1 for need to create, 0 for no need
-WindingNames={'A','B','C'};         % Names of windings, like 'A', 'B', 'C'
-
+%=========================================================
+m= length(WindingNames); % Phases
 % Auto calculate the coil pitch (usually 5/6 of whole pitch)
 if coil_pitch==0
     coil_pitch=floor(z/(2*p)*5/6);
@@ -70,25 +70,36 @@ for i=1:n
     text(1.25*cosd(slot_deg(i)),1.25*sind(slot_deg(i)),num2str(i),'FontSize',18);
 end
 
-% Sort the phase of slots by 60 deg band
+% Sort the phase of slots by band
+BandDeg=360/(2*m); % Degree of one band
+for i=1:m
+    BandPos(i,1)=(2*i-2)*BandDeg;
+    BandPos(i,2)=(2*i-1)*BandDeg;
+    BandNeg(i,1)=180+(2*i-2)*BandDeg;
+    BandNeg(i,2)=180+(2*i-1)*BandDeg;
+end
+
+for i=1:m
+    for j=1:2
+        if BandPos(i,j)>360
+            BandPos(i,j)=BandPos(i,j)-360;
+        end
+        if BandNeg(i,j)>360
+            BandNeg(i,j)=BandNeg(i,j)-360;
+        end
+    end
+end
+
 for i=1:z
-    if slot_deg(i)>=0 && slot_deg(i)<60
-        slot_phase_in(i)=1;
+    for j=1:length(BandPos)
+        if slot_deg(i)>=BandPos(j,1) && slot_deg(i)<BandPos(j,2)
+            slot_phase_in(i)=j;
+        end
     end
-    if slot_deg(i)>=60 && slot_deg(i)<120
-        slot_phase_in(i)=-3;
-    end
-    if slot_deg(i)>=120 && slot_deg(i)<180
-        slot_phase_in(i)=2;
-    end
-    if slot_deg(i)>=180 && slot_deg(i)<240
-        slot_phase_in(i)=-1;
-    end
-    if slot_deg(i)>=240 && slot_deg(i)<300
-        slot_phase_in(i)=3;
-    end
-    if slot_deg(i)>= 300 && slot_deg(i)<360
-        slot_phase_in(i)=-2;
+    for j=1:length(BandNeg)
+        if slot_deg(i)>=BandNeg(j,1) && slot_deg(i)<BandNeg(j,2)
+            slot_phase_in(i)=-j;
+        end
     end
 end
 
@@ -128,21 +139,16 @@ fprintf('Winding factor = %.4f\n',k_w)
 fprintf('++++++++++++++++++++++\n')
 
 % Rename and print the phase of each slot 
+for i=1:length(WindingNames)
+    WindingNamesPos{i}=['+',WindingNames{i}];
+    WindingNamesNeg{i}=['-',WindingNames{i}];
+end
 for i=1:2
     for j=1:z
-        switch SLOT(i,j)
-            case 1
-                SHOW{i,j}='+A';
-            case 2
-                SHOW{i,j}='+B';
-            case 3
-                SHOW{i,j}='+C';
-            case -1
-                SHOW{i,j}='-A';
-            case -2
-                SHOW{i,j}='-B';
-            case -3
-                SHOW{i,j}='-C';
+        if SLOT(i,j)>0
+            SHOW{i,j}=WindingNamesPos{SLOT(i,j)};
+        else
+            SHOW{i,j}=WindingNamesNeg{-SLOT(i,j)};
         end
         fprintf('%s ',SHOW{i,j})
     end
@@ -186,7 +192,6 @@ if mode~=5
     end
     % ---Add winding---
     if FlagCreateWinding==1
-%         Winding={'A','B','C'};
         for i=1:length(WindingNames)
             fprintf(fid,'oModule.AssignWindingGroup Array("NAME:Winding%s", "Type:=", "Current", "IsSolid:=",  _\n',WindingNames{i});
             fprintf(fid,'  false, "Current:=", "0mA", "Resistance:=", "0ohm", "Inductance:=", "0nH", "Voltage:=",  _\n');
