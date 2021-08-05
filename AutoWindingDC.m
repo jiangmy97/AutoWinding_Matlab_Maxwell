@@ -1,6 +1,6 @@
 % AutoWindingDC.m
 % For arranging DC machine's windings and auto excitation arrangement in Ansys Maxwell.
-% By JIANG M. Y. on 2021-08-04.
+% By JIANG M. Y. on 2021-08-05.
 
 % ===Instruction===
 % 1. Fill the "input" according to your model.
@@ -23,8 +23,8 @@ DesignName='noload';        % Name of the design
 TerminalName1='Coil';     % Name of the winding terminal
 TerminalName2='Coilu';     % Name of the winding terminal (For mode 2 and mode 4)
 
-p=5;       % Pole pairs
-z=11;       % Slots
+p=1;       % Pole pairs
+z=15;       % Slots
 
 Nc=0;        % Number of one layer conductors, Nc=0 for already set
 FlagCreateWinding=1;    % Switch of create winding, 1 for need to create, 0 for no need
@@ -115,8 +115,8 @@ elseif FlagWindingType==2
     y2=(z1-1)/p1;
     for i=1:z1
         CONNECT(i)=1+(i-1)*y2;
-        while CONNECT(i)>z
-            CONNECT(i)=CONNECT(i)-z;
+        while CONNECT(i)>z1
+            CONNECT(i)=CONNECT(i)-z1;
         end
     end
 end
