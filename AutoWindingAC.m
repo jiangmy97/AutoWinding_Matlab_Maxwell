@@ -1,33 +1,33 @@
 % AutoWinding.m
 % For arranging AC machine's windings and auto excitation arrangement in Ansys Maxwell.
-% By JIANG M. Y. on 2021-08-04.
+% By JIANG M. Y. on 2021-09-08.
 
 % ===Instruction===
 % 1. Fill the "input" according to your model.
 % 2. Run the script in "Tools > Run script"
-% 3. The name of winding terminal should be in the form of "TerminalName_TerminalNumber", (e.g. Terminal_3). 
+% 3. The name of winding terminal should be in the form of "TerminalName_TerminalNumber", (e.g. Terminal_3).
 
 clear all
 clc
 
-% Input 
-mode=2;         
-% mode=1 for single layer auto winding excitation arrangement in Maxwell 2D 
+% Input
+mode=2;
+% mode=1 for single layer auto winding excitation arrangement in Maxwell 2D
 % mode=2 for double layer auto winding excitation arrangement in Maxwell 2D
 % mode=3 for single layer auto winding excitation arrangement in Maxwell 3D
 % mode=4 for double layer auto winding excitation arrangement in Maxwell 3D
 % mode=5 for winding arrangement display only
 OutputFilename='test1.vbs';        % Filename of .vbs
-ProjectName='DS-R-1';         % Filename of .aedt
-DesignName='noload-m2';        % Name of the design
-TerminalName1='ICoil';     % Name of the winding terminal
-TerminalName2='ICoilu';     % Name of the winding terminal (For mode 2 and mode 4)
-WindingNames={'A','B','C'};         % Names of windings, like 'A', 'B', 'C'
+ProjectName='MG3';         % Filename of .aedt
+DesignName='noload4';        % Name of the design
+TerminalName1='CoilIn';     % Name of the winding terminal
+TerminalName2='CoilInu';     % Name of the winding terminal (For mode 2 and mode 4)
+WindingNames={'Ai','Bi','Ci'};         % Names of windings, like 'A', 'B', 'C'
 p=2;       % Pole pairs
-z=30;       % Slots
-coil_pitch=0;       % 0 for auto coil pitch calculation, [1, +inf) for manual control, -1 for drum coil
+z=12;       % Slots
+coil_pitch=3;       % 0 for auto coil pitch calculation, [1, +inf) for manual control, -1 for drum coil
 Nc=0;        % Number of one layer conductors, Nc=0 for already set
-FlagCreateWinding=1;    % Switch of create winding, 1 for need to create, 0 for no need
+FlagCreateWinding=0;    % Switch of create winding, 1 for need to create, 0 for no need
 %=========================================================
 m= length(WindingNames); % Phases
 % Auto calculate the coil pitch (usually 5/6 of whole pitch)
@@ -138,7 +138,7 @@ fprintf('Distribution factor = %.4f\n',k_d)
 fprintf('Winding factor = %.4f\n',k_w)
 fprintf('++++++++++++++++++++++\n')
 
-% Rename and print the phase of each slot 
+% Rename and print the phase of each slot
 for i=1:length(WindingNames)
     WindingNamesPos{i}=['+',WindingNames{i}];
     WindingNamesNeg{i}=['-',WindingNames{i}];
@@ -202,9 +202,17 @@ if mode~=5
     
     for i=1:length(SLOT)
         if mode==1 || mode==2
-            fprintf(fid,'oModule.AssignCoil Array("NAME:%s_%d", "Objects:=", Array( _\n',TerminalName1,SLOT(3,i));
+            if SLOT(3,i)==0
+                fprintf(fid,'oModule.AssignCoil Array("NAME:%s", "Objects:=", Array( _\n',TerminalName1);
+            else
+                fprintf(fid,'oModule.AssignCoil Array("NAME:%s_%d", "Objects:=", Array( _\n',TerminalName1,SLOT(3,i));
+            end
         else
-            fprintf(fid,'oModule.AssignCoilTerminal Array("NAME:%s_%d", "Objects:=", Array( _\n',TerminalName1,SLOT(3,i));
+            if SLOT(3,i)==0
+                fprintf(fid,'oModule.AssignCoilTerminal Array("NAME:%s", "Objects:=", Array( _\n',TerminalName1);
+            else
+                fprintf(fid,'oModule.AssignCoilTerminal Array("NAME:%s_%d", "Objects:=", Array( _\n',TerminalName1,SLOT(3,i));
+            end
         end
         
         if i==1
@@ -230,16 +238,28 @@ if mode~=5
         else
             fprintf(fid,'oModule.AddWindingTerminals ');
         end
+        if SLOT(3,i)==0
+            fprintf(fid,'"Winding%s", Array("%s")\n',WindingNames{abs(SLOT(2,i))},TerminalName1);
+        else
             fprintf(fid,'"Winding%s", Array("%s_%d")\n',WindingNames{abs(SLOT(2,i))},TerminalName1,SLOT(3,i));
+        end
     end
     
     
     if mode==2 || mode==4
         for i=1:length(SLOT)
             if mode==1 || mode==2
-                fprintf(fid,'oModule.AssignCoil Array("NAME:%s_%d", "Objects:=", Array( _\n',TerminalName2,SLOT(3,i));
+                if SLOT(3,i)==0
+                    fprintf(fid,'oModule.AssignCoil Array("NAME:%s", "Objects:=", Array( _\n',TerminalName2);
+                else
+                    fprintf(fid,'oModule.AssignCoil Array("NAME:%s_%d", "Objects:=", Array( _\n',TerminalName2,SLOT(3,i));
+                end
             else
-                fprintf(fid,'oModule.AssignCoilTerminal Array("NAME:%s_%d", "Objects:=", Array( _\n',TerminalName2,SLOT(3,i));
+                if SLOT(3,i)==0
+                    fprintf(fid,'oModule.AssignCoilTerminal Array("NAME:%s", "Objects:=", Array( _\n',TerminalName2);
+                else
+                    fprintf(fid,'oModule.AssignCoilTerminal Array("NAME:%s_%d", "Objects:=", Array( _\n',TerminalName2,SLOT(3,i));
+                end
             end
             
             if i==1
@@ -265,7 +285,11 @@ if mode~=5
             else
                 fprintf(fid,'oModule.AddWindingTerminals ');
             end
-            fprintf(fid,'"Winding%s", Array("%s_%d")\n',WindingNames{abs(SLOT(1,i))},TerminalName2,SLOT(3,i));
+            if SLOT(3,i)==0
+                fprintf(fid,'"Winding%s", Array("%s")\n',WindingNames{abs(SLOT(1,i))},TerminalName2);
+            else
+                fprintf(fid,'"Winding%s", Array("%s_%d")\n',WindingNames{abs(SLOT(1,i))},TerminalName2,SLOT(3,i));
+            end
         end
     end
     fclose('all');
