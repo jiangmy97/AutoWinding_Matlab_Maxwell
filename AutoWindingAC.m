@@ -18,16 +18,16 @@ mode=2;
 % mode=4 for double layer auto winding excitation arrangement in Maxwell 3D
 % mode=5 for winding arrangement display only
 OutputFilename='test1.vbs';        % Filename of .vbs
-ProjectName='MG3';         % Filename of .aedt
-DesignName='noload4';        % Name of the design
-TerminalName1='CoilIn';     % Name of the winding terminal
-TerminalName2='CoilInu';     % Name of the winding terminal (For mode 2 and mode 4)
-WindingNames={'Ai','Bi','Ci'};         % Names of windings, like 'A', 'B', 'C'
+ProjectName='Project1';         % Filename of .aedt
+DesignName='MaxwellDesign1';        % Name of the design
+TerminalName1='Coil';     % Name of the winding terminal
+TerminalName2='Coilu';     % Name of the winding terminal (For mode 2 and mode 4)
+WindingNames={'A','B','C'};         % Names of windings, like 'A', 'B', 'C'
 p=2;       % Pole pairs
 z=12;       % Slots
-coil_pitch=3;       % 0 for auto coil pitch calculation, [1, +inf) for manual control, -1 for drum coil
-Nc=0;        % Number of one layer conductors, Nc=0 for already set
-FlagCreateWinding=0;    % Switch of create winding, 1 for need to create, 0 for no need
+coil_pitch=0;       % 0 for auto coil pitch calculation, [1, +inf) for manual control, -1 for drum coil
+Nc=1;        % Number of one layer conductors, Nc=0 for already set
+FlagCreateWinding=1;    % Switch of create winding, 1 for need to create, 0 for no need
 %=========================================================
 m= length(WindingNames); % Phases
 % Auto calculate the coil pitch (usually 5/6 of whole pitch)
