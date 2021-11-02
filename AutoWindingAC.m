@@ -1,6 +1,6 @@
 % AutoWinding.m
 % For arranging AC machine's windings and auto excitation arrangement in Ansys Maxwell.
-% By JIANG M. Y. on 2021-09-08.
+% By JIANG M. Y. on 2021-11-2.
 
 % ===Instruction===
 % 1. Fill the "input" according to your model.
@@ -12,27 +12,28 @@ clc
 
 % Input
 mode=2;
-% mode=1 for single layer auto winding excitation arrangement in Maxwell 2D
-% mode=2 for double layer auto winding excitation arrangement in Maxwell 2D
-% mode=3 for single layer auto winding excitation arrangement in Maxwell 3D
-% mode=4 for double layer auto winding excitation arrangement in Maxwell 3D
+% mode=1 for single layer in Maxwell 2D
+% mode=2 for double layer in Maxwell 2D
+% mode=3 for single layer in Maxwell 3D
+% mode=4 for double layer in Maxwell 3D
 % mode=5 for winding arrangement display only
 OutputFilename='test1.vbs';        % Filename of .vbs
-ProjectName='Project1';         % Filename of .aedt
-DesignName='MaxwellDesign1';        % Name of the design
+ProjectName='CRG1';         % Filename of .aedt
+DesignName='noload-OutS';        % Name of the design
 TerminalName1='Coil';     % Name of the winding terminal
 TerminalName2='Coilu';     % Name of the winding terminal (For mode 2 and mode 4)
 WindingNames={'A','B','C'};         % Names of windings, like 'A', 'B', 'C'
 p=2;       % Pole pairs
-z=12;       % Slots
+z=24;       % Slots
 coil_pitch=0;       % 0 for auto coil pitch calculation, [1, +inf) for manual control, -1 for drum coil
-Nc=1;        % Number of one layer conductors, Nc=0 for already set
-FlagCreateWinding=1;    % Switch of create winding, 1 for need to create, 0 for no need
+Nc=0;        % Number of one layer conductors, Nc=0 for already set
+FlagCreateWinding=0;    % Switch of create winding, 1 for need to create, 0 for no need
 %=========================================================
 m= length(WindingNames); % Phases
 % Auto calculate the coil pitch (usually 5/6 of whole pitch)
+tau=z/(2*p); % Pole pitch
 if coil_pitch==0
-    coil_pitch=floor(z/(2*p)*5/6);
+    coil_pitch=floor(tau*5/6);
     if coil_pitch==0
         coil_pitch=1;
     end
@@ -43,6 +44,7 @@ end
 alf=p*360/z;        % Electric angle between two slots in deg
 % Display
 fprintf('Coil pitch = %d slot(s)\n',coil_pitch)
+fprintf('Pole pitch = %.2f slot(s)\n',tau)
 fprintf('Slot angle = %.4f deg\n',alf)
 
 % Calculate the electric angle of every slot (0 deg - 359 deg)
@@ -72,11 +74,24 @@ end
 
 % Sort the phase of slots by band
 BandDeg=360/(2*m); % Degree of one band
-for i=1:m
-    BandPos(i,1)=(2*i-2)*BandDeg;
-    BandPos(i,2)=(2*i-1)*BandDeg;
-    BandNeg(i,1)=180+(2*i-2)*BandDeg;
-    BandNeg(i,2)=180+(2*i-1)*BandDeg;
+if mod(m,2)==1
+    for i=1:m
+        BandPos(i,1)=(2*i-2)*BandDeg;
+        BandPos(i,2)=(2*i-1)*BandDeg;
+        BandNeg(i,1)=180+(2*i-2)*BandDeg;
+        BandNeg(i,2)=180+(2*i-1)*BandDeg;
+    end
+else
+    for i=1:m/2
+        BandPos(2*i-1,1)=(2*i-2)*BandDeg*2;
+        BandPos(2*i-1,2)=(2*i-2)*BandDeg*2+BandDeg;
+        BandPos(2*i,1)=(2*i-1)*BandDeg*2-BandDeg;
+        BandPos(2*i,2)=(2*i-1)*BandDeg*2;
+        BandNeg(2*i-1,1)=180+(2*i-2)*BandDeg*2;
+        BandNeg(2*i-1,2)=180+(2*i-2)*BandDeg*2+BandDeg;
+        BandNeg(2*i,1)=180+(2*i-1)*BandDeg*2-BandDeg;
+        BandNeg(2*i,2)=180+(2*i-1)*BandDeg*2;
+    end
 end
 
 for i=1:m
@@ -90,13 +105,14 @@ for i=1:m
     end
 end
 
+[row,col]=size(BandPos);
 for i=1:z
-    for j=1:length(BandPos)
+    for j=1:row
         if slot_deg(i)>=BandPos(j,1) && slot_deg(i)<BandPos(j,2)
             slot_phase_in(i)=j;
         end
     end
-    for j=1:length(BandNeg)
+    for j=1:row
         if slot_deg(i)>=BandNeg(j,1) && slot_deg(i)<BandNeg(j,2)
             slot_phase_in(i)=-j;
         end
@@ -205,20 +221,20 @@ if mode~=5
             if SLOT(3,i)==0
                 fprintf(fid,'oModule.AssignCoil Array("NAME:%s", "Objects:=", Array( _\n',TerminalName1);
             else
-                fprintf(fid,'oModule.AssignCoil Array("NAME:%s_%d", "Objects:=", Array( _\n',TerminalName1,SLOT(3,i));
+                fprintf(fid,'oModule.AssignCoil Array("NAME:%s_Separate%d", "Objects:=", Array( _\n',TerminalName1,SLOT(3,i));
             end
         else
             if SLOT(3,i)==0
                 fprintf(fid,'oModule.AssignCoilTerminal Array("NAME:%s", "Objects:=", Array( _\n',TerminalName1);
             else
-                fprintf(fid,'oModule.AssignCoilTerminal Array("NAME:%s_%d", "Objects:=", Array( _\n',TerminalName1,SLOT(3,i));
+                fprintf(fid,'oModule.AssignCoilTerminal Array("NAME:%s_Separate%d", "Objects:=", Array( _\n',TerminalName1,SLOT(3,i));
             end
         end
         
         if i==1
             fprintf(fid,'  "%s"), "Conductor number:=", "N", ',TerminalName1);
         else
-            fprintf(fid,'  "%s_%d"), "Conductor number:=", "N", ',TerminalName1,SLOT(3,i));
+            fprintf(fid,'  "%s_Separate%d"), "Conductor number:=", "N", ',TerminalName1,SLOT(3,i));
         end
         if SLOT(2,i)>0
             if mode==1 || mode==2
@@ -241,7 +257,7 @@ if mode~=5
         if SLOT(3,i)==0
             fprintf(fid,'"Winding%s", Array("%s")\n',WindingNames{abs(SLOT(2,i))},TerminalName1);
         else
-            fprintf(fid,'"Winding%s", Array("%s_%d")\n',WindingNames{abs(SLOT(2,i))},TerminalName1,SLOT(3,i));
+            fprintf(fid,'"Winding%s", Array("%s_Separate%d")\n',WindingNames{abs(SLOT(2,i))},TerminalName1,SLOT(3,i));
         end
     end
     
@@ -252,20 +268,20 @@ if mode~=5
                 if SLOT(3,i)==0
                     fprintf(fid,'oModule.AssignCoil Array("NAME:%s", "Objects:=", Array( _\n',TerminalName2);
                 else
-                    fprintf(fid,'oModule.AssignCoil Array("NAME:%s_%d", "Objects:=", Array( _\n',TerminalName2,SLOT(3,i));
+                    fprintf(fid,'oModule.AssignCoil Array("NAME:%s_Separate%d", "Objects:=", Array( _\n',TerminalName2,SLOT(3,i));
                 end
             else
                 if SLOT(3,i)==0
                     fprintf(fid,'oModule.AssignCoilTerminal Array("NAME:%s", "Objects:=", Array( _\n',TerminalName2);
                 else
-                    fprintf(fid,'oModule.AssignCoilTerminal Array("NAME:%s_%d", "Objects:=", Array( _\n',TerminalName2,SLOT(3,i));
+                    fprintf(fid,'oModule.AssignCoilTerminal Array("NAME:%s_Separate%d", "Objects:=", Array( _\n',TerminalName2,SLOT(3,i));
                 end
             end
             
             if i==1
                 fprintf(fid,'  "%s"), "Conductor number:=", "N", ',TerminalName2);
             else
-                fprintf(fid,'  "%s_%d"), "Conductor number:=", "N", ',TerminalName2,SLOT(3,i));
+                fprintf(fid,'  "%s_Separate%d"), "Conductor number:=", "N", ',TerminalName2,SLOT(3,i));
             end
             if SLOT(1,i)>0
                 if mode==2
@@ -288,7 +304,7 @@ if mode~=5
             if SLOT(3,i)==0
                 fprintf(fid,'"Winding%s", Array("%s")\n',WindingNames{abs(SLOT(1,i))},TerminalName2);
             else
-                fprintf(fid,'"Winding%s", Array("%s_%d")\n',WindingNames{abs(SLOT(1,i))},TerminalName2,SLOT(3,i));
+                fprintf(fid,'"Winding%s", Array("%s_Separate%d")\n',WindingNames{abs(SLOT(1,i))},TerminalName2,SLOT(3,i));
             end
         end
     end
