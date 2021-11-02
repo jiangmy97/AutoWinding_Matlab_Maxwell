@@ -3,20 +3,22 @@ An auto AC and DC machine's winding/excitation arrangement MATLAB script for ANS
 
 The MATLAB script for AC machine is [here](https://github.com/jiangmy97/AutoWinding_Matlab_Maxwell/blob/main/AutoWindingAC.m) and for DC machine is [here](https://github.com/jiangmy97/AutoWinding_Matlab_Maxwell/blob/main/AutoWindingDC.m).  
 
-Last updated on 2021-08-04.
+Last updated on 2021-11-2.
 
 ## Function
 * Auto AC/DC machines' winding arrangement calculation. The slot-star vectogram will be plotted. The slot-phase arrangements and corresponding data will be displayed in the command window. 
 * Auto excitation arrangement in ANSYS Maxwell 2D/3D. No need for manual input.
 
 ## How to use it
-1.	Fill the "Input" section. Please follow the instructions behind each parameters.
+1.	Open the .aedt file. Use "Draw > Duplicate around axis" to duplicate your coil object, input the following parameters in the window:
 
-2.	Run the .m file. The .vbs will generate in the same folder of .m file. The slot-star vectogram will be plotted and the slot-phase arrangements will be displayed in the command window.
+Item | Value/Selection
+------------ | -------------
+Angle | 360deg/Number of slots (e.g. 15deg for 24 slots)
+Total number | Number of slots
+Attach To Original Object | Yes
 
-3.	Open the .aedt file.
- 
-4.	Run the script in “Tools > Run script”. The excitation will automatically be arranged.
-
-## Notice
-* The terminal name are in the form of "TerminalName_TerminalNumber" (e.g. "LapCoil_2"). However, **the initial terminal doesn't have terminal number. (e.g. "LapCoil" itself is the name of the first coil)** The terminals are recommended to be created by duplicating around axis, as the program is written based on this method. E.g., if the initial terminal has the name of "LapCoil", then the terminal after duplication should be like "LapCoil_1", "LapCoil_2", etc. If the initial terminal has the name of "LapCoil1", then the terminal after duplication should be like "LapCoil1_1", "LapCoil1_2", etc.  
+2. Open the .m file. Right click the object, use "Edit > Boolean > Seperate Bodies" to seperate them.
+3.	Fill the "Input" section. Please follow the instructions behind each parameters.
+4.	Run the .m file. The .vbs will generate in the same folder of .m file. The slot-star vectogram will be plotted and the slot-phase arrangements will be displayed in the command window.
+5.	Open the .aedt file. Run the script in “Tools > Run script”. The excitation will automatically be arranged.
