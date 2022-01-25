@@ -18,7 +18,7 @@ Angle | 360deg/Number of slots (e.g. 15deg for 24 slots)
 Total number | Number of slots
 Attach To Original Object | Yes
 
-2. Open the .m file. Right click the object, use "Edit > Boolean > Seperate Bodies" to seperate them.
-3.	Fill the "Input" section. Please follow the instructions behind each parameters.
+2.  Right click the object, use "Edit > Boolean > Seperate Bodies" to seperate them.
+3.	Open the .m file. Fill the "Input" section. Please follow the instructions behind each parameters.
 4.	Run the .m file. The .vbs will generate in the same folder of .m file. The slot-star vectogram will be plotted and the slot-phase arrangements will be displayed in the command window.
 5.	Open the .aedt file. Run the script in “Tools > Run script”. The excitation will automatically be arranged.
