@@ -1,13 +1,13 @@
 % AutoWinding.m
 % For arranging AC machine's windings and auto excitation arrangement in Ansys Maxwell.
-% By JIANG M. Y. on 2022-06-29.
+% By JIANG M. Y. on 2022-07-15.
 
 % ===Instruction===
 % 1. Fill the "input" according to your model.
 % 2. Run the script in "Tools > Run script"
 % 3. The name of winding terminal should be in the form of "TerminalName_TerminalNumber", (e.g. Terminal_3).
 
-clear all
+clear
 clc
 close all
 
@@ -19,20 +19,20 @@ mode=2;
 % mode=4 for double layer in Maxwell 3D
 OutputFilename='test1.vbs';        % Filename of .vbs
 ProjectName='HODR-3';         % Filename of .aedt
-DesignName='noload-IntegCoil';        % Name of the design
+DesignName='noload-24z-13t3r-37k';        % Name of the design
 TerminalName1='MCoil';     % Name of the winding terminal
 TerminalName2='MCoilu';     % Name of the winding terminal (For mode 2 and mode 4)
 WindingNames={'A', 'B', 'C'};         % Names of windings, like 'A', 'B', 'C'
 BigOrSmallPhaseBelt=0;          % Big Phase Belt or small phase belt. E.g., for 3 phase, big phase belt=120 deg belt=1, small phase belt=60 deg belt=0.
 p=2;       % Pole pairs
-z=12;       % Slots
-coil_pitch=2;       % 0 for auto coil pitch calculation, [1, +inf) for manual control, -1001 for drum coil, -1002 for pole coil
-NName='N';  % Name for parameter of the number of conductors 
+z=24;       % Slots
+coil_pitch=0;       % 0 for auto coil pitch calculation, [1, +inf) for manual control, -1001 for drum coil, -1002 for pole coil
+NName='N';  % Name for parameter of the number of conductors
 Nc=0;        % Number of one layer conductors, Nc=0 for already set
 FlagCreateWinding=0;    % Switch of create winding, 1 for need to create, 0 for no need
 ManualInput=[]; % Manual input in number, empty the array when not needed
 pDS=[]; % For doubly salient structure, empty the array when not needed
-nHarmonic=100;  % PPN of high order harmonics
+nHarmonic=10;  % PPN of high order harmonics
 %=========================================================
 m= length(WindingNames); % Phases
 % Auto calculate the coil pitch (usually 5/6 of whole pitch)
@@ -54,6 +54,7 @@ alf=p*360/z;        % Electric angle between two slots in deg
 fprintf('Coil pitch = %d slot(s)\n',coil_pitch)
 fprintf('Pole pitch = %.2f slot(s)\n',tau)
 fprintf('Slot angle = %.4f deg\n',alf)
+fprintf('Phase belt = %d deg\n',360/(m*(2-BigOrSmallPhaseBelt)))
 
 % Calculate the electric angle of every slot (0 deg - 359 deg)
 for i=1:z
@@ -165,35 +166,75 @@ end
 SLOT=[slot_phase_out;slot_phase_in];
 
 % Calculate the pitch factor
-if coil_pitch==0
-    k_p1=1;
-else
-    k_p1=sind(coil_pitch/(z/(2*p))*90);
-end
-
+% if coil_pitch==0
+%     k_p1=1;
+% else
+%     k_p1=sind(coil_pitch/(z/(2*p))*90);
+% end
+%
 % Calculate the distribution factor
-q=z/(2*p*m);    % Slots per phase per pole
-[N,D]=rat(q);
-if D~=1
-    q=N;
-    alf=60/N;
+% q=z/(2*p*m);    % Slots per phase per pole
+% [N,D]=rat(q);
+% if D~=1
+%     q=N;
+%     alf=60/N;
+% end
+% k_d1=sind(q*alf/2)/(q*sind(alf/2));
+% ns=1;
+% for i=1:length(slot_phase_in)
+%     if slot_phase_in(i)==1
+%         S1(ns)=i;
+%         ns=ns+1;
+%     end
+%     if slot_phase_in(i)==-1
+%         S1(ns)=-i;
+%         ns=ns+1;
+%     end
+% end
+% for j=1:length(S1)
+%     E1(i,j)=sign(S1(j))*exp(1i*2*pi*HarmonicPPN(i)/z*abs(S1(j)));
+% end
+%
+% % Calculate the winding factor
+% k_w1=k_d1*k_p1;
+%
+% % Calculate the High order harmonics' winding factor
+% for i=1:nHarmonic
+%     k_pn(i)=sind(i*coil_pitch/(z/(2*p))*90);
+%     k_dn(i)=sind(i*q*alf/2)/(q*sind(i*alf/2));
+%     k_wn(i)=k_dn(i)*k_pn(i);
+% end
+
+% Select the first phase array
+ns=1;
+for i=1:length(slot_phase_in)
+    if slot_phase_in(i)==1
+        S1(ns)=i;
+        ns=ns+1;
+    end
+    if slot_phase_in(i)==-1
+        S1(ns)=-i;
+        ns=ns+1;
+    end
 end
-k_d1=sind(q*alf/2)/(q*sind(alf/2));
 
-% Calculate the winding factor
-k_w1=k_d1*k_p1;
-
-% Calculate the High order harmonics' winding factor
 for i=1:nHarmonic
-    k_pn(i)=sind(i*coil_pitch/(z/(2*p))*90);
-    k_dn(i)=sind(i*q*alf/2)/(q*sind(i*alf/2));
+    for j=1:length(S1)
+        E1(i,j)=sign(S1(j))*complex(cosd(slot_deg(abs(S1(j)))),sind(slot_deg(abs(S1(j)))));
+    end
+    k_dn(i)=1/length(S1)*abs(sum(E1(i,:)));
+    if k_dn(i)<1e-4
+        k_dn(i)=0;
+    end
+    tau_n(i)=z/(2*i*p);
+    k_pn(i)=sind(coil_pitch/tau_n(i)*90);
     k_wn(i)=k_dn(i)*k_pn(i);
 end
 
 % Display
-fprintf('Pitch factor = %.4f\n',k_p1)
-fprintf('Distribution factor = %.4f\n',k_d1)
-fprintf('Winding factor = %.4f\n',k_w1)
+fprintf('Pitch factor = %.4f\n',k_pn(1))
+fprintf('Distribution factor = %.4f\n',k_dn(1))
+fprintf('Winding factor = %.4f\n',k_wn(1))
 fprintf('++++++++++++++++++++++\n')
 
 % Rename and print the phase of each slot
@@ -272,7 +313,7 @@ for i=1:length(SLOT)
             fprintf(fid,'oModule.AssignCoilTerminal Array("NAME:%s_Separate%d", "Objects:=", Array( _\n',TerminalName1,SLOT(3,i));
         end
     end
-    
+
     if i==1
         fprintf(fid,'  "%s"), "Conductor number:=", "%s", ',TerminalName1,NName);
     else
@@ -319,7 +360,7 @@ if mode==2 || mode==4
                 fprintf(fid,'oModule.AssignCoilTerminal Array("NAME:%s_Separate%d", "Objects:=", Array( _\n',TerminalName2,SLOT(3,i));
             end
         end
-        
+
         if i==1
             fprintf(fid,'  "%s"), "Conductor number:=", "%s", ',TerminalName2,NName);
         else
@@ -351,3 +392,5 @@ if mode==2 || mode==4
     end
 end
 fclose('all');
+
+
