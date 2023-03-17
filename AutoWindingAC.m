@@ -18,14 +18,14 @@ mode=2;
 % mode=3 for single layer in Maxwell 3D
 % mode=4 for double layer in Maxwell 3D
 OutputFilename='test1.vbs';        % Filename of .vbs
-ProjectName='HODR-3';         % Filename of .aedt
-DesignName='noload-24z-13t3r-37k';        % Name of the design
-TerminalName1='MCoil';     % Name of the winding terminal
-TerminalName2='MCoilu';     % Name of the winding terminal (For mode 2 and mode 4)
-WindingNames={'A', 'B', 'C'};         % Names of windings, like 'A', 'B', 'C'
+ProjectName='TP1';         % Filename of .aedtC1
+DesignName='noload';        % Name of the design
+TerminalName1='Coil';     % Name of the winding terminal
+TerminalName2='Coilu';     % Name of the winding terminal (For mode 2 and mode 4)
+WindingNames={'A', 'B'};         % Names of windings, like 'A', 'B', 'C'
 BigOrSmallPhaseBelt=0;          % Big Phase Belt or small phase belt. E.g., for 3 phase, big phase belt=120 deg belt=1, small phase belt=60 deg belt=0.
-p=2;       % Pole pairs
-z=24;       % Slots
+p=12;       % Pole pairs
+z=16;       % Slots
 coil_pitch=0;       % 0 for auto coil pitch calculation, [1, +inf) for manual control, -1001 for drum coil, -1002 for pole coil
 NName='N';  % Name for parameter of the number of conductors
 Nc=0;        % Number of one layer conductors, Nc=0 for already set
@@ -80,9 +80,9 @@ end
 
 % Plot slot-star vectogram
 n = z / gcd(z,p);
-if n == p
-    n = 2*n;
-end
+% if n == p
+%     n = 2*n;
+% end
 for i=1:n
     c(i)=complex(cosd(slot_deg(i)),sind(slot_deg(i)));
 end
@@ -94,11 +94,20 @@ end
 % Sort the phase of slots by band
 if BigOrSmallPhaseBelt==0 % Small phase belt
     BandDeg=360/(2*m); % Degree of one band
-    for i=1:m
-        BandPos(i,1)=(2*i-2)*BandDeg;
-        BandPos(i,2)=(2*i-1)*BandDeg;
-        BandNeg(i,1)=180+(2*i-2)*BandDeg;
-        BandNeg(i,2)=180+(2*i-1)*BandDeg;
+    if mod(m,2)==1 % For odd phase
+        for i=1:m
+            BandPos(i,1)=(2*i-2)*BandDeg;
+            BandPos(i,2)=(2*i-1)*BandDeg;
+            BandNeg(i,1)=180+(2*i-2)*BandDeg;
+            BandNeg(i,2)=180+(2*i-1)*BandDeg;
+        end
+    else %For even phase
+        for i=1:m
+            BandPos(i,1)=(i-1)*BandDeg;
+            BandPos(i,2)=i*BandDeg;
+            BandNeg(i,1)=180+(i-1)*BandDeg;
+            BandNeg(i,2)=180+i*BandDeg;
+        end
     end
 
     for i=1:m
